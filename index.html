@@ -2280,6 +2280,31 @@ MUST值</span>
           inp.src = origSrc;
         });
       });
+      // 空值橙色发光：dpiInput / sensInput 无内容时边框橙色呼吸闪烁
+      if (!document.getElementById('empty-glow-style')) {
+        var st = document.createElement('style');
+        st.id = 'empty-glow-style';
+        st.textContent = '@keyframes emptyGlowPulse { 0%,100% { filter: drop-shadow(0 0 3px rgba(249,117,3,0.8)) drop-shadow(0 0 6px rgba(249,117,3,0.5)); } 50% { filter: drop-shadow(0 0 8px rgba(249,117,3,1)) drop-shadow(0 0 16px rgba(249,117,3,0.9)) drop-shadow(0 0 24px rgba(249,117,3,0.7)); } }';
+        document.head.appendChild(st);
+      }
+      function updateEmptyGlow() {
+        ['dpiInput','sensInput'].forEach(function(id){
+          var ctl = els[id].el;
+          var inp = els[glowMap[id]].el;
+          var empty = !ctl.value || ctl.value.trim() === '';
+          if (empty) {
+            inp.style.animation = 'emptyGlowPulse 1.2s ease-in-out infinite';
+          } else {
+            inp.style.animation = '';
+            inp.style.filter = '';
+          }
+        });
+      }
+      ['dpiInput','sensInput'].forEach(function(id){
+        els[id].el.addEventListener('input', updateEmptyGlow);
+        els[id].el.addEventListener('change', updateEmptyGlow);
+      });
+      updateEmptyGlow();
 
       // 进度条：渐变填充可拖动调整进度（拖动时动态生成对应填充长度的 SVG）
       var progEl = els['prog'].el;
@@ -2883,7 +2908,7 @@ MUST值</span>
   </div>
   <div id="settings-mask" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10001;">
 </div>
-  <div id="settings-card" style="display:none;position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:10002;width:740px;height:940px;background:#fefae8;border:0.18em solid #212121;border-radius:0.6em;color:#212121;font-family:Impact,'Arial Narrow Bold','Microsoft YaHei',sans-serif;box-shadow:0.6em 0.6em 0 #212121;overflow:hidden;user-select:none;-webkit-user-select:none;">
+  <div id="settings-card" style="display:none;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:10005;width:740px;height:min(940px,92vh);max-height:92vh;background:#fefae8;border:0.18em solid #212121;border-radius:0.6em;color:#212121;font-family:Impact,'Arial Narrow Bold','Microsoft YaHei',sans-serif;box-shadow:0.6em 0.6em 0 #212121;overflow:hidden;user-select:none;-webkit-user-select:none;">
     <div style="position:relative;padding:16px 20px 12px;border-bottom:0.15em solid #212121;">
       <div class="comic-radio-group">
         <input type="radio" name="st-tab-r" id="st-tab-display" checked>
@@ -3447,12 +3472,8 @@ Apex英雄</option>
       <div style="padding:8px 26px 50px;font-size:14px;line-height:1.65;letter-spacing:0.3px;">
         <div>一、点击按钮A或按钮B可选择模式进行盲测灵敏度（标准或精准）</div>
         <div>二、灵敏度换算按钮可进行不同游戏间的同手感的灵敏度换算</div>
-        <div>三、训练时长条可拖动选择单项训练时长</div>
-        <div>四、填写自己当前游戏的灵敏度后进行测试</div>
-        <div>五、两种测试模式只是算法不同</div>
-        <div>六、精准模式填写能接受的最慢和最快灵敏度（可以在标准模式测试中寻找合适灵敏度）</div>
-        <div>七、最慢灵敏度可为标准测试得出的推荐灵敏度（先标准和精准后会更加精确）</div>
-        <div>八、移动标靶需要按住左键进行射击命中</div>
+        <div>三、在主页面左边填写自己当前游戏的灵敏度后进行测试</div>
+        <div>四、精准模式填写能接受的最慢和最快灵敏度（可以在标准模式测试中寻找合适灵敏度）</div>
       </div>
       <div class="st-bottom-bar">
         <button id="info-ok" class="st-bottom-btn st-bottom-btn-primary">
