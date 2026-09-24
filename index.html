@@ -835,6 +835,7 @@
 </head>
 <body>
 <iframe id="loadingIframe" src="./loading.html" style="position:fixed;inset:0;width:100vw;height:100vh;border:none;z-index:9999;background:#000;"></iframe>
+<script>setTimeout(function(){var f=document.getElementById("loadingIframe");if(f)f.remove();},8000);</script>
   <header>
     <div class="header-buttons">
       <button class="btn" type="button">
@@ -6306,6 +6307,7 @@ Apex英雄</option>
           this.updateHUD();
           if (this.drillIdx < BLIND_ORDER.length) {
             startDrillSet(BLIND_ORDER[this.drillIdx]);
+            yaw = 0; pitch = 0; camera.rotation.order = 'YXZ'; camera.rotation.set(0, 0, 0);
             resetCountdown(); startCountdown();
             return;
           }
