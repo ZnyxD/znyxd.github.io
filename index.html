@@ -843,6 +843,8 @@
 设置</button>
       <button class="btn" type="button">
 说明</button>
+      <button class="btn" type="button" id="hist-btn">
+历史</button>
     </div>
     <img src="assets/svg/导航栏%20.svg" alt="导航栏"/>
   </header>
@@ -2636,7 +2638,14 @@ MUST值</span>
         var initDeg = initJoyAngle * 180 / Math.PI;
         joyEl.src = joySvg(270 + (angle * 180 / Math.PI / initDeg) * 90);
         // 摇杆转到最左边时，右侧指示灯1内部白色线条变#F68967+圆角矩形外框发光
-        led1El.src = led1Svg(angle >= Math.PI - 0.001);
+        var atLeft = angle >= Math.PI - 0.001;
+        led1El.src = led1Svg(atLeft);
+        if (atLeft && !window.__joyLeftFired) {
+          window.__joyLeftFired = true;
+          var hb = document.getElementById('hist-btn');
+          if (hb) hb.click();
+          setTimeout(function(){ window.__joyLeftFired = false; }, 1500);
+        }
         // 摇杆转到最右边时，右侧指示灯2内部白色线条变#F68967+圆角矩形外框发光
         led2El.src = led2Svg(angle <= 0.001);
         layout();
@@ -3463,6 +3472,26 @@ Apex英雄</option>
     </div>
   </div>
   <!-- 说明弹窗（导航栏"说明"按钮打开，漫画风：米黄底 + 黑边框 + 硬阴影，与设置卡片同款） -->
+  <div id="hist-mask" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10006;justify-content:center;align-items:center;">
+    <div id="hist-card" style="display:none;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:10007;width:90vw;max-width:680px;max-height:88vh;overflow:auto;background:#fefae8;border:0.18em solid #212121;border-radius:0.6em;color:#212121;font-family:Impact,'Arial Narrow Bold','Microsoft YaHei',sans-serif;box-shadow:0.6em 0.6em 0 #212121;user-select:none;-webkit-user-select:none;">
+      <div style="position:relative;padding:16px 20px 12px;border-bottom:0.15em solid #212121;">
+        <div style="font-size:26px;font-weight:700;color:#097698;letter-spacing:6px;">盲测历史</div>
+        <button id="hist-close" style="position:absolute;top:8px;right:10px;width:24px;height:24px;background:#ffd900;border:2px solid #212121;border-radius:4px;box-shadow:2px 2px 0 #212121;cursor:pointer;font-size:14px;font-weight:900;color:#212121;line-height:1;padding:0;">✕</button>
+      </div>
+      <div style="padding:16px 26px;">
+        <table style="width:100%;border-collapse:collapse;font-size:14px;">
+          <thead><tr style="border-bottom:2px solid #212121;">
+            <th style="padding:8px;">第几次</th><th style="padding:8px;">时间</th><th style="padding:8px;">模式</th><th style="padding:8px;">推荐灵敏度</th>
+          </tr></thead>
+          <tbody id="hist-body"></tbody>
+        </table>
+      </div>
+      <div style="padding:10px 26px 20px;display:flex;gap:12px;justify-content:center;">
+        <button id="hist-clear" style="padding:8px 20px;background:#f97503;color:#fff;border:2px solid #212121;border-radius:6px;box-shadow:3px 3px 0 #212121;cursor:pointer;font-weight:700;">清除历史记录</button>
+        <button id="hist-ok" style="padding:8px 20px;background:#ffd900;color:#212121;border:2px solid #212121;border-radius:6px;box-shadow:3px 3px 0 #212121;cursor:pointer;font-weight:700;">确认关闭</button>
+      </div>
+    </div>
+  </div>
   <div id="info-mask" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10003;justify-content:center;align-items:center;">
     <div id="info-card" style="display:none;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:10004;width:90vw;max-width:780px;background:#fefae8;border:0.18em solid #212121;border-radius:0.6em;color:#212121;font-family:Impact,'Arial Narrow Bold','Microsoft YaHei',sans-serif;box-shadow:0.6em 0.6em 0 #212121;user-select:none;-webkit-user-select:none;">
       <div style="position:relative;padding:16px 20px 12px;border-bottom:0.15em solid #212121;">
@@ -4542,7 +4571,35 @@ Apex英雄</option>
     var infoMask = document.getElementById('info-mask');
     var infoCard = document.getElementById('info-card');
     if (!infoMask || !infoCard) return;
-    var infoBtn = document.querySelectorAll('.header-buttons .btn')[1];   // 第二个按钮 = 说明
+    var infoBtn = document.querySelectorAll('.header-buttons .btn')[1];
+    var histBtn = document.getElementById('hist-btn');
+    function renderHist() {
+      var h = JSON.parse(localStorage.getItem('blindHist') || '[]');
+      var bd = document.getElementById('hist-body');
+      if (!bd) return;
+      if (!h.length) { bd.innerHTML = '<tr><td colspan="4" style="padding:20px;text-align:center;color:#888;">暂无历史记录</td></tr>'; return; }
+      bd.innerHTML = h.map(function(r){
+        return '<tr style="border-bottom:1px solid #ccc;' + (r.isNew?'background:#fff3cd;':'') + '">' +
+          '<td style="padding:8px;text-align:center;font-weight:700;">' + r.n + (r.isNew?' <span style="color:#f97503;">新</span>':'') + '</td>' +
+          '<td style="padding:8px;text-align:center;">' + r.t + '</td>' +
+          '<td style="padding:8px;text-align:center;">' + r.m + '</td>' +
+          '<td style="padding:8px;text-align:center;font-weight:700;color:#f97503;">' + r.s + '</td></tr>';
+      }).join('');
+    }
+    histBtn.addEventListener('click', function(){
+      renderHist();
+      document.getElementById('hist-mask').style.display='flex';
+      document.getElementById('hist-card').style.display='block';
+    });
+    document.getElementById('hist-close').addEventListener('click', function(){
+      document.getElementById('hist-mask').style.display='none';
+    });
+    document.getElementById('hist-ok').addEventListener('click', function(){
+      document.getElementById('hist-mask').style.display='none';
+    });
+    document.getElementById('hist-clear').addEventListener('click', function(){
+      localStorage.removeItem('blindHist'); renderHist();
+    });
     function openInfo() { infoMask.style.display = 'flex'; infoCard.style.display = 'block'; }
     function closeInfo() { infoMask.style.display = 'none'; infoCard.style.display = 'none'; }
     if (infoBtn) infoBtn.addEventListener('click', openInfo);
@@ -6539,6 +6596,14 @@ Apex英雄</option>
           if (bd) bd.innerHTML = rows;
           var fs = document.getElementById('blind-report-final');
           if (fs) fs.textContent = finalSens.toFixed(2);
+          // 存历史
+          try {
+            var h = JSON.parse(localStorage.getItem('blindHist') || '[]');
+            h.unshift({ n: h.length + 1, t: new Date().toLocaleString('zh-CN', {hour12:false}), m: this.mode === 'b' ? '精准' : '标准', s: finalSens.toFixed(2), isNew: 1 });
+            h.forEach(function(r,i){ r.isNew = (i===0)?1:0; });
+            if (h.length > 10) h = h.slice(0, 10);
+            localStorage.setItem('blindHist', JSON.stringify(h));
+          } catch(e){}
           var mask = document.getElementById('blind-report-mask');
           if (mask) { mask.style.display = 'flex'; needsRender = true; if (renderer && scene && camera) renderScene(); }
         }
