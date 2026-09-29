@@ -4605,6 +4605,8 @@ Apex英雄</option>
     if (infoBtn) infoBtn.addEventListener('click', openInfo);
     // loading iframe 移除后再弹说明
     function tryOpen() {
+      // demo 模式（?blinddemo=1 / ?bblinddemo=1）只展示盲测结果弹窗，不弹说明
+      if (location.search.indexOf('blinddemo=1') >= 0) return;
       var f = document.getElementById('loadingIframe');
       if (!f) { openInfo(); }
       else setTimeout(tryOpen, 500);
@@ -6605,7 +6607,12 @@ Apex英雄</option>
             localStorage.setItem('blindHist', JSON.stringify(h));
           } catch(e){}
           var mask = document.getElementById('blind-report-mask');
-          if (mask) { mask.style.display = 'flex'; needsRender = true; if (renderer && scene && camera) renderScene(); }
+          if (mask) {
+            // 退出指针锁：鼠标可见可点击弹窗按钮
+            if (document.pointerLockElement && document.exitPointerLock) { try { document.exitPointerLock(); } catch (e) {} }
+            var xh = document.getElementById('scene3d-xhair'); if (xh) xh.style.display = 'none';
+            mask.style.display = 'flex'; needsRender = true; if (renderer && scene && camera) renderScene();
+          }
         }
       };
       function resetTrainRes() {
@@ -7554,14 +7561,16 @@ Apex英雄</option>
           if (qCfm) qCfm.addEventListener('click', function () { closeQSens(true); });
           var qCcl = document.getElementById('q-sens-cancel');
           if (qCcl) qCcl.addEventListener('click', function () { closeQSens(false); });
+          function restoreXhair() { var xh = document.getElementById('scene3d-xhair'); if (xh) xh.style.display = ''; }
           ['blind-report-close-left','blind-report-close-right'].forEach(function(id){
             var b = document.getElementById(id);
-            if (b) b.addEventListener('click', function(){ var m=document.getElementById('blind-report-mask'); if(m) m.style.display='none'; });
+            if (b) b.addEventListener('click', function(){ var m=document.getElementById('blind-report-mask'); if(m) m.style.display='none'; restoreXhair(); });
           });
           var bRptClose = document.getElementById('blind-report-close');
           if (bRptClose) bRptClose.addEventListener('click', function () {
             var m = document.getElementById('blind-report-mask');
             if (m) m.style.display = 'none';
+            restoreXhair();
           });
           var bRptUse = document.getElementById('blind-report-use');
           if (bRptUse) bRptUse.addEventListener('click', function () {
@@ -7577,12 +7586,14 @@ Apex英雄</option>
             }
             var m = document.getElementById('blind-report-mask');
             if (m) m.style.display = 'none';
+            restoreXhair();
           });
           var bRptPrecise = document.getElementById('blind-report-precise');
           if (bRptPrecise) bRptPrecise.addEventListener('click', function () {
             // 关闭汇总窗，切换到 B 场景（黄金分割寻优），弹 Q 填最低/最高
             var m = document.getElementById('blind-report-mask');
             if (m) m.style.display = 'none';
+            restoreXhair();
             window.__blindTest.running = false;
             if (window.__enterBScene) window.__enterBScene();
             else { window.__bScene = true; }
