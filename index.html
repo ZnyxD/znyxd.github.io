@@ -6339,7 +6339,7 @@ Apex英雄</option>
       })();
       var BLIND_TOTAL_ROUNDS = 11;
       window.__blindTest = {
-        running: false, roundIdx: 0, branch: 'l', drillIdx: 0,
+        running: false, roundIdx: 0, branch: 'l', drillIdx: 0, firstBranch: 'l',
         mode: 'a',   // 'a' = A场景二分倍率, 'b' = B场景黄金分割
         base: 0, lSens: 0, rSens: 0, lTotal: 0, rTotal: 0,
         // B场景黄金分割状态
@@ -6429,6 +6429,24 @@ Apex英雄</option>
               else this.startBranch(this.pendingReuse.sens === this.gB ? 'l' : 'r');
               return;
             }
+            if (this.mode === 'a' && this.firstBranch === 'r') {
+              // 本轮先 B 后 A：现在 A 是第二分支，直接收轮
+              var chosen2 = (this.rTotal >= this.lTotal) ? this.rSens : this.lSens;
+              var newBase2 = (this.base + chosen2) / 2;
+              this.roundLog.push({
+                base: this.base, l: this.lSens, r: this.rSens,
+                lT: this.lTotal, rT: this.rTotal, chosen: chosen2, newBase: newBase2,
+                lScores: (this.lScores||[]).slice(), rScores: (this.rScores||[]).slice()
+              });
+              this.base = newBase2;
+              this.roundIdx++;
+              if (this.roundIdx >= BLIND_ROUNDS.length) this.finish();
+              else {
+                this.firstBranch = (this.roundIdx % 2 === 0) ? 'l' : 'r';
+                this.startBranch(this.firstBranch);
+              }
+              return;
+            }
             this.startBranch('r');
           } else {
             this.rTotal = total;
@@ -6472,6 +6490,11 @@ Apex英雄</option>
                 this.startBranch(this.pendingReuse ? (this.pendingReuse.sens === this.gB ? 'l' : 'r') : 'l');
               }
             } else {
+              if (this.firstBranch === 'r') {
+                // 本轮先 B 后 A：B 已完成，继续跑 A
+                this.startBranch('l');
+                return;
+              }
               var chosen = (this.rTotal >= this.lTotal) ? this.rSens : this.lSens;
               var newBase = (this.base + chosen) / 2;
               this.roundLog.push({
@@ -6482,7 +6505,10 @@ Apex英雄</option>
               this.base = newBase;
               this.roundIdx++;
               if (this.roundIdx >= BLIND_ROUNDS.length) this.finish();
-              else this.startBranch('l');
+              else {
+                this.firstBranch = (this.roundIdx % 2 === 0) ? 'l' : 'r';
+                this.startBranch(this.firstBranch);
+              }
             }
           }
         },
