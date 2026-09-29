@@ -982,7 +982,7 @@ FOV -° · - cm/360</div>
               <button aria-label="关闭" title="关闭" id="blind-report-close-left" style="position:absolute;top:10px;left:10px;width:24px;height:24px;background:#ffd900;border:2px solid #212121;border-radius:4px;box-shadow:2px 2px 0 #212121;cursor:pointer;"></button>
               <button aria-label="关闭" title="关闭" id="blind-report-close-right" style="position:absolute;top:10px;right:10px;width:24px;height:24px;background:#ffd900;border:2px solid #212121;border-radius:4px;box-shadow:2px 2px 0 #212121;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#212121;line-height:1;padding:0;">✕</button>
               <div class="pause-title">灵敏度寻优结果</div>
-              <div class="pause-sub">七轮二分搜索 · 权重 跟枪40% + 微调18% + 转火12% + 连点15% + 反应15%</div>
+              <div class="pause-sub">七轮二分搜索 · 权重 跟枪30% + 微调15% + 转火10% + 连点20% + 反应25%</div>
               <div style="margin:12px 0 0;width:100%;background-color:#2b80d9;background-image:radial-gradient(circle, rgba(0,0,0,0.2) 0.05em, transparent 0.05em);background-size:0.5em 0.5em;background-position:0 0,0.25em 0.25em;border-radius:8px;padding:0;overflow:hidden;border:4px solid #1a1a1a;">
                 <table style="width:100%;border-collapse:collapse;font-size:13px;color:#fff;">
                   <thead><tr style="background:rgba(0,0,0,0.35);font-size:13px;font-weight:700;height:36px;letter-spacing:4px;">
@@ -6278,7 +6278,7 @@ Apex英雄</option>
         { l: 0.80, r: 1.20 }, { l: 0.90, r: 1.10 }, { l: 0.95, r: 1.05 }, { l: 0.95, r: 1.05 }
       ];
       var BLIND_ORDER = ['one', 'two', 'three', 'four', 'five'];
-      var BLIND_W = { one: 0.12, two: 0.18, three: 0.40, four: 0.15, five: 0.15 };
+      var BLIND_W = { one: 0.10, two: 0.15, three: 0.30, four: 0.20, five: 0.25 };
       var BLIND_NAMES = { one: '01 目标转火', two: '02 目标微调', three: '03 跟枪持续', four: '04 单球连点', five: '05 反应单球' };
       // 快速预览：URL 带 ?blinddemo=1 时，页面加载后自动填假数据弹出汇总弹窗
       (function () {
@@ -6290,7 +6290,7 @@ Apex英雄</option>
           for (var i = 0; i < 7; i++) {
             var l = base * mults[i][0], r = base * mults[i][1];
             var lScores=[pad(),pad(),pad(),pad(),pad()], rScores=[pad(),pad(),pad(),pad(),pad()];
-            var W=[0.12,0.18,0.40,0.15,0.15];
+            var W=[0.10,0.15,0.30,0.20,0.25];
             function ws(a){var t=0;for(var j=0;j<5;j++)t+=a[j]*W[j];return Math.round(t);}
             var lT=ws(lScores), rT=ws(rScores);
             var chosen = rT>=lT?r:l;
@@ -6315,7 +6315,7 @@ Apex英雄</option>
           function pad() { return (Math.random()*80+120)|0; }
           var mn = 1, mx = 10, log = [];
           var a = mn + 0.382*(mx-mn), b = mn + 0.618*(mx-mn);
-          var W=[0.12,0.18,0.40,0.15,0.15];
+          var W=[0.10,0.15,0.30,0.20,0.25];
           function ws(x){var t=0;for(var j=0;j<5;j++)t+=x[j]*W[j];return Math.round(t);}
           for (var i = 0; i < 11; i++) {
             var aScores=[pad(),pad(),pad(),pad(),pad()], bScores=[pad(),pad(),pad(),pad(),pad()];
