@@ -6634,8 +6634,10 @@ Apex英雄</option>
           } catch(e){}
           var mask = document.getElementById('blind-report-mask');
           if (mask) {
-            // 退出指针锁：鼠标可见可点击弹窗按钮
-            if (document.pointerLockElement && document.exitPointerLock) { try { document.exitPointerLock(); } catch (e) {} }
+            // 退出指针锁：鼠标可见可点击弹窗按钮（立即退出 + 延迟再退一次，抵消 onDrillEnded 异步重新锁定）
+            function unlockNow() { if (document.pointerLockElement && document.exitPointerLock) { try { document.exitPointerLock(); } catch (e) {} } }
+            unlockNow();
+            setTimeout(unlockNow, 180);
             var xh = document.getElementById('scene3d-xhair'); if (xh) xh.style.display = 'none';
             mask.style.display = 'flex'; needsRender = true; if (renderer && scene && camera) renderScene();
           }
